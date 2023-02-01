@@ -546,7 +546,7 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                            (program, exp_r0, $2, SUB);
                   }
                }
-   | COUNT_ONES LPAR exp RPAR {
+   | COUNT_ONES LPAR exp RPAR { /* idea is to shift the array one bit at the time, and use an AND operation with a mask where the last bit is 1 */
                   if($3.expression_type == IMMEDIATE) { 
                      // whenever possible, costant folding should be executed (means to check if it is IMMEDIATE or REGISTER)
                      // exp is known at compile-time
@@ -562,26 +562,44 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                      $$ = create_expression(result, IMMEDIATE); // $$ is the result of the expression
                   } else {
                      // exp is knwon at run-time
-
+                     //
                      // idea:       ↑→→→ L_OUT
                      // INIT -> condition -> BODY + increment -> BR
                      //             ↑←←←←←←←←←←←←←←←←←←←←←←←←←←←←←↓ (loop)
                      // condition: i - 32 == 0 -> BEQ, BNE work with PSW
+
                      int r_i = gen_load_immediate(program, 0); //creates a new register for integer (i)
                      int r_value = getNewRegister(program);
+                     int r_result = gen_load_immediate(program, 0);
 
                      gen_add_instruction(program, r_value, REG_0, $3.value, CG_DIRECT_ALL);
 
+                     //condition
                      t_axe_label* l_cond = assignNewLabel(program); // does what newLabel() and assignLabel() do
                      gen_subi_instruction(program, REG_0, r_i, 32) //R0 is used to ignore the result and just set the PSW register, checks i - 32 == 0
 
                      t_axe_label* l_out = newLabel(program);
                      gen_beq_instruction(program, l_out, 0);
+
+                     //BODY
+                     int r_has_last_bit_one = getNewRegister(program);
+                     gen_andbi_instruction(program, r_has_last_bit_one, r_value, 1);
+                     gen_add_instruction(program, r_result, r_result, r_has_last_bit_one, CG_DIRECT_ALL);
+                     gen_shri_instruction(program, r_value, 1); // shift-right immediate instruction
+
+                     //increment
+                     gen_addi_instruction(programm, r_i, r_i, 1);
+
+                     //BR -> branch unconditionally to the label assigned with l_cond
+                     gen_bt_instruction(program, l_cond, 0);
+
+                     //L_OUT
+                     assignLabel(program, l_out);
+
+                     $$ = create_expression(r_result, REGISTER); //outputs the result
                   }
   0 }
 ;
-
-/* idea is to shift the array one bit at the time, and use an AND operation with a mask where the last bit is 1 */
 
 %%
 /*=========================================================================
