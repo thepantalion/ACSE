@@ -134,6 +134,8 @@ extern void yyerror(const char*);
 %token <svalue> IDENTIFIER
 %token <intval> NUMBER
 
+%token CONVERGE
+
 %type <expr> exp
 %type <decl> declaration
 %type <list> declaration_list
@@ -354,7 +356,7 @@ if_stmt  :  IF
                code_block { $$ = $1; }
 ;
 
-while_statement  : WHILE
+while_statement : WHILE
                   {
                      /* initialize the value of the non-terminal */
                      $1 = create_while_statement();
@@ -389,6 +391,10 @@ while_statement  : WHILE
                      /* fix the label `label_end' */
                      assignLabel(program, $1.label_end);
                   }
+               | CONVERGE {
+                  $1 = create_while_statement();
+                  
+               }
 ;
                   
 do_while_statement  : DO
