@@ -134,6 +134,8 @@ extern void yyerror(const char*);
 %token <svalue> IDENTIFIER
 %token <intval> NUMBER
 
+%token COUNT_ONES
+
 %type <expr> exp
 %type <decl> declaration
 %type <list> declaration_list
@@ -544,7 +546,42 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                            (program, exp_r0, $2, SUB);
                   }
                }
+   | COUNT_ONES LPAR exp RPAR {
+                  if($3.expression_type == IMMEDIATE) { 
+                     // whenever possible, costant folding should be executed (means to check if it is IMMEDIATE or REGISTER)
+                     // exp is known at compile-time
+                     int result = 0;
+                     int value = $3.value; // do not use the register directly to do checks!!!
+
+                     for(int i = 0; i < 32; i++) {
+                        int has_last_bit_one = $3.value & 1; // binary AND operation between value of 'exp' and the number 1
+                        result += has_last_bit_one;
+                        value = value >> 1; // right-shifts the value by 1bit position
+                     }
+
+                     $$ = create_expression(result, IMMEDIATE); // $$ is the result of the expression
+                  } else {
+                     // exp is knwon at run-time
+
+                     // idea:       ↑→→→ L_OUT
+                     // INIT -> condition -> BODY + increment -> BR
+                     //             ↑←←←←←←←←←←←←←←←←←←←←←←←←←←←←←↓ (loop)
+                     // condition: i - 32 == 0 -> BEQ, BNE work with PSW
+                     int r_i = gen_load_immediate(program, 0); //creates a new register for integer (i)
+                     int r_value = getNewRegister(program);
+
+                     gen_add_instruction(program, r_value, REG_0, $3.value, CG_DIRECT_ALL);
+
+                     t_axe_label* l_cond = assignNewLabel(program); // does what newLabel() and assignLabel() do
+                     gen_subi_instruction(program, REG_0, r_i, 32) //R0 is used to ignore the result and just set the PSW register, checks i - 32 == 0
+
+                     t_axe_label* l_out = newLabel(program);
+                     gen_beq_instruction(program, l_out, 0);
+                  }
+  0 }
 ;
+
+/* idea is to shift the array one bit at the time, and use an AND operation with a mask where the last bit is 1 */
 
 %%
 /*=========================================================================
