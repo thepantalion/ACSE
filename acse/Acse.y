@@ -291,7 +291,7 @@ case_statement : CASE LPAR exp RPAR COLON {
                      } else {
                         //need to do andb to set the proper values of PSW to use BNE, becaquse it's not known what handle_binary_comparison() might do
                         gen_andb_instruction(program, compare.value, compare.value, compare.value, CG_DIRECT_ALL);
-                        gen_bne_instruction(program, $1, 0);
+                        gen_beq_instruction(program, $1, 0);
                      }
                   } statements {
                      assignLabel(program, $1);

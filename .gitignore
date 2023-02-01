@@ -38,3 +38,10 @@ ReleaseNotes.pdf
 ToolchainManual.pdf
 tests/countOnes/output.asm
 tests/countOnes/output.o
+tests/selectCase/output_control_flow.log
+tests/selectCase/output_data_flow.log
+tests/selectCase/output_frontend.log
+tests/selectCase/output_reg_alloc.log
+tests/selectCase/output_symbol_table.log
+tests/selectCase/output.asm
+tests/selectCase/output.o

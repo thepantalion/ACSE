@@ -75,7 +75,10 @@
      ELSE = 291,
      TYPE = 292,
      IDENTIFIER = 293,
-     NUMBER = 294
+     NUMBER = 294,
+     COLON = 295,
+     SELECT = 296,
+     CASE = 297
    };
 #endif
 /* Tokens.  */
@@ -116,13 +119,16 @@
 #define TYPE 292
 #define IDENTIFIER 293
 #define NUMBER 294
+#define COLON 295
+#define SELECT 296
+#define CASE 297
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 104 "Acse.y"
+#line 105 "Acse.y"
 {            
    int intval;
    char *svalue;
@@ -133,7 +139,7 @@ typedef union YYSTYPE
    t_while_statement while_stmt;
 }
 /* Line 1529 of yacc.c.  */
-#line 137 "obj/Acse.tab.h"
+#line 143 "obj/Acse.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
