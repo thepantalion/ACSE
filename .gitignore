@@ -36,3 +36,10 @@ acse_doc.pdf
 README.pdf
 ReleaseNotes.pdf
 ToolchainManual.pdf
+tests/countOnes/output_control_flow.log
+tests/countOnes/output_data_flow.log
+tests/countOnes/output_frontend.log
+tests/countOnes/output_reg_alloc.log
+tests/countOnes/output_symbol_table.log
+tests/countOnes/output.asm
+tests/countOnes/output.o

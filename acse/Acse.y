@@ -576,7 +576,7 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
 
                      //condition
                      t_axe_label* l_cond = assignNewLabel(program); // does what newLabel() and assignLabel() do
-                     gen_subi_instruction(program, REG_0, r_i, 32) //R0 is used to ignore the result and just set the PSW register, checks i - 32 == 0
+                     gen_subi_instruction(program, REG_0, r_i, 32); //R0 is used to ignore the result and just set the PSW register, checks i - 32 == 0
 
                      t_axe_label* l_out = newLabel(program);
                      gen_beq_instruction(program, l_out, 0);
@@ -585,10 +585,10 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                      int r_has_last_bit_one = getNewRegister(program);
                      gen_andbi_instruction(program, r_has_last_bit_one, r_value, 1);
                      gen_add_instruction(program, r_result, r_result, r_has_last_bit_one, CG_DIRECT_ALL);
-                     gen_shri_instruction(program, r_value, 1); // shift-right immediate instruction
+                     gen_shri_instruction(program, r_value, r_value, 1); // shift-right immediate instruction
 
                      //increment
-                     gen_addi_instruction(programm, r_i, r_i, 1);
+                     gen_addi_instruction(program, r_i, r_i, 1);
 
                      //BR -> branch unconditionally to the label assigned with l_cond
                      gen_bt_instruction(program, l_cond, 0);
@@ -598,7 +598,7 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
 
                      $$ = create_expression(r_result, REGISTER); //outputs the result
                   }
-  0 }
+  }
 ;
 
 %%

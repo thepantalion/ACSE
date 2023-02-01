@@ -75,7 +75,8 @@
      ELSE = 291,
      TYPE = 292,
      IDENTIFIER = 293,
-     NUMBER = 294
+     NUMBER = 294,
+     COUNT_ONES = 295
    };
 #endif
 /* Tokens.  */
@@ -116,6 +117,7 @@
 #define TYPE 292
 #define IDENTIFIER 293
 #define NUMBER 294
+#define COUNT_ONES 295
 
 
 
@@ -133,7 +135,7 @@ typedef union YYSTYPE
    t_while_statement while_stmt;
 }
 /* Line 1529 of yacc.c.  */
-#line 137 "obj/Acse.tab.h"
+#line 139 "obj/Acse.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

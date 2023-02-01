@@ -94,7 +94,7 @@ ID       [a-zA-Z_][a-zA-Z0-9_]*
 "read"            { return READ; }
 "write"           { return WRITE; }
 
-"count_one"       { return COUNT_ONES; }
+"count_ones"       { return COUNT_ONES; }
 
 {ID}              { yylval.svalue=strdup(yytext); return IDENTIFIER; }
 {DIGIT}+          { yylval.intval = atoi( yytext );
