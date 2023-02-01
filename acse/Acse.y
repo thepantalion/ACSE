@@ -90,6 +90,7 @@ t_reg_allocator *RA;       /* Register allocator. It implements the "Linear
 
 t_io_infos *file_infos;    /* input and output files used by the compiler */
 
+t_axe_variable 
 
 extern int yylex(void);
 extern void yyerror(const char*);
@@ -393,7 +394,13 @@ while_statement : WHILE
                   }
                | CONVERGE {
                   $1 = create_while_statement();
+                  $1.label_condition = assignNewLabel(program);
                   
+               } exp /* it might be an expression, look out lol */ {
+                  
+               } RBRACE code_block LBRACE {
+                  gen_bt_instruction(program, $1.label_end, 0);
+                  assignLabel(program, $1.label_end);
                }
 ;
                   
