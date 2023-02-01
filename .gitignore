@@ -36,3 +36,5 @@ acse_doc.pdf
 README.pdf
 ReleaseNotes.pdf
 ToolchainManual.pdf
+tests/countOnes/output.asm
+tests/countOnes/output.o

@@ -91,6 +91,7 @@ t_reg_allocator *RA;       /* Register allocator. It implements the "Linear
 t_io_infos *file_infos;    /* input and output files used by the compiler */
 
 
+t_axe_expression select_exp;
 extern int yylex(void);
 extern void yyerror(const char*);
 
@@ -133,6 +134,10 @@ extern void yyerror(const char*);
 %token <intval> TYPE
 %token <svalue> IDENTIFIER
 %token <intval> NUMBER
+
+%token COLON
+%token SELECT
+%token <label> CASE //corresponds to the t_axe_label type
 
 %type <expr> exp
 %type <decl> declaration
@@ -250,12 +255,48 @@ statement   : assign_statement SEMI      { /* does nothing */ }
             | SEMI            { gen_nop_instruction(program); }
 ;
 
-control_statement : if_statement         { /* does nothing */ }
+control_statement : if_statement         { /* does nothing */ } /* keep existing code */
             | while_statement            { /* does nothing */ }
             | do_while_statement SEMI    { /* does nothing */ }
             | return_statement SEMI      { /* does nothing */ }
+            | select_statement           { /* does nothing */ }
 ;
 
+select_statement : SELECT LPAR exp RPAR LBRACE {
+                     int r_copy = getNewRegister(program);
+                     
+                     if($3.expression_type == IMMEDIATE) {
+                        gen_addi_instruction(program, r_copy, REG_0, $3.value);
+                     } else {
+                        gen_add_instruction(program, r_copy, REG_0, $3.value, CG_DIRECT_ALL);
+                     }
+
+                     select_exp = create_expression(r_copy, REGISTER); //makes it so the value, if updated in any case, is used in its new form in any other following case
+                  } case_statements RBRACE 
+
+case_statements : case_statements case_statement {}
+                | case_statement {}
+
+/* for each case, it has to evaluate EXP == INDENTIFIER and have branches go to the next evalutation if the condition is not true
+   -> a block of code can be put anywhere, but to use a certain NON-TERMINAL related code, it must run after that
+ */
+case_statement : CASE LPAR exp RPAR COLON {
+                     $1 = newLabel(program);
+                     t_axe_expression compare = handle_binary_comparison(program, select_exp, $3, _EQ_); //does comparison on the expression and the value of select
+
+                     if(compare.expression_type == IMMEDIATE) {
+                        if(!compare.value) {
+                           gen_bt_instruction(program, $1, 0);
+                        }
+                     } else {
+                        //need to do andb to set the proper values of PSW to use BNE, becaquse it's not known what handle_binary_comparison() might do
+                        gen_andb_instruction(program, compare.value, compare.value, compare.value, CG_DIRECT_ALL);
+                        gen_bne_instruction(program, $1, 0);
+                     }
+                  } statements {
+                     assignLabel(program, $1);
+                  }
+ 
 read_write_statement : read_statement  { /* does nothing */ }
                      | write_statement { /* does nothing */ }
 ;
