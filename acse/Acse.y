@@ -134,6 +134,8 @@ extern void yyerror(const char*);
 %token <svalue> IDENTIFIER
 %token <intval> NUMBER
 
+%token <fma> FMA
+
 %type <expr> exp
 %type <decl> declaration
 %type <list> declaration_list
