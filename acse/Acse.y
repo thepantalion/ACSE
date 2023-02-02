@@ -90,7 +90,7 @@ t_reg_allocator *RA;       /* Register allocator. It implements the "Linear
 
 t_io_infos *file_infos;    /* input and output files used by the compiler */
 
-t_axe_variable 
+
 
 extern int yylex(void);
 extern void yyerror(const char*);
@@ -110,6 +110,7 @@ extern void yyerror(const char*);
    t_list *list;
    t_axe_label *label;
    t_while_statement while_stmt;
+   t_converge_statement converge_stmt;
 } 
 /*=========================================================================
                                TOKENS 
@@ -135,7 +136,7 @@ extern void yyerror(const char*);
 %token <svalue> IDENTIFIER
 %token <intval> NUMBER
 
-%token CONVERGE
+%token <converge_stmt> CONVERGE
 
 %type <expr> exp
 %type <decl> declaration
@@ -257,6 +258,7 @@ control_statement : if_statement         { /* does nothing */ }
             | while_statement            { /* does nothing */ }
             | do_while_statement SEMI    { /* does nothing */ }
             | return_statement SEMI      { /* does nothing */ }
+            | converge_statement
 ;
 
 read_write_statement : read_statement  { /* does nothing */ }
@@ -392,16 +394,6 @@ while_statement : WHILE
                      /* fix the label `label_end' */
                      assignLabel(program, $1.label_end);
                   }
-               | CONVERGE {
-                  $1 = create_while_statement();
-                  $1.label_condition = assignNewLabel(program);
-                  
-               } exp /* it might be an expression, look out lol */ {
-                  
-               } RBRACE code_block LBRACE {
-                  gen_bt_instruction(program, $1.label_end, 0);
-                  assignLabel(program, $1.label_end);
-               }
 ;
                   
 do_while_statement  : DO
@@ -432,6 +424,10 @@ return_statement : RETURN
                gen_halt_instruction(program);
             }
 ;
+
+converge_statement : CONVERGE IDENTIFIER { //  this semantic action executes before the execution of the code_block section
+                        int r_temp = getNewRegister(program);
+                     } code_block // code_block already includes the syntax needed for braces, so it is wrong to add any more LBRACE or RBRACE
 
 read_statement : READ LPAR IDENTIFIER RPAR 
             {
