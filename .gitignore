@@ -36,3 +36,110 @@ acse_doc.pdf
 README.pdf
 ReleaseNotes.pdf
 ToolchainManual.pdf
+tests/countOnes/output.asm
+tests/countOnes/output.o
+tests/selectCase/output_control_flow.log
+tests/selectCase/output_data_flow.log
+tests/selectCase/output_frontend.log
+tests/selectCase/output_reg_alloc.log
+tests/selectCase/output_symbol_table.log
+tests/selectCase/output.asm
+tests/selectCase/output.o
+acse/obj/.Acse.tab 2.o.icloud
+acse/obj/.axe_gencode 2.o.icloud
+acse/obj/.axe_io_manager 2.o.icloud
+acse/obj/.axe_labels 2.o.icloud
+acse/obj/.axe_struct 2.o.icloud
+acse/obj/.axe_target_asm_print 2.o.icloud
+acse/obj/.axe_target_transform 2.o.icloud
+acse/obj/.axe_transform 2.o.icloud
+acse/obj/.axe_utils 2.o.icloud
+acse/obj/.axe_version 2.o.icloud
+acse/obj/.lex.yy 2.o.icloud
+acse/obj/.symbol_table 2.o.icloud
+acse/obj/Acse.tab 2.c
+acse/obj/Acse.tab 2.h
+acse/obj/Acse.tab.c
+acse/obj/Acse.tab.h
+acse/obj/axe_gencode 2.d
+acse/obj/axe_io_manager 2.d
+acse/obj/axe_labels 2.d
+acse/obj/axe_reg_alloc 2.d
+acse/obj/axe_reg_alloc 2.o
+acse/obj/axe_struct 2.d
+acse/obj/axe_target_asm_print 2.d
+acse/obj/axe_target_transform 2.d
+acse/obj/axe_transform 2.d
+acse/obj/axe_utils 2.d
+acse/obj/axe_version 2.c
+acse/obj/collections 2.d
+acse/obj/collections 2.o
+acse/obj/lex.yy 2.c
+acse/obj/lex.yy.c
+acse/obj/symbol_table 2.d
+assembler/obj/.lex.yy 2.o.icloud
+assembler/obj/assembler.tab 2.o
+bin/acse 2
+bin/asm 2
+bin/mace 2
+mace/obj/.main 2.o.icloud
+mace/obj/main 2.d
+acse/obj/Acse.tab 2.o
+acse/obj/Acse.tab.c
+acse/obj/Acse.tab.h
+acse/obj/axe_gencode 2.o
+acse/obj/axe_io_manager 2.o
+acse/obj/axe_labels 2.o
+acse/obj/axe_struct 2.o
+acse/obj/axe_target_asm_print 2.o
+acse/obj/axe_target_transform 2.o
+acse/obj/axe_transform 2.o
+acse/obj/axe_utils 2.o
+acse/obj/axe_version 2.o
+acse/obj/lex.yy 2.o
+acse/obj/lex.yy.c
+acse/obj/symbol_table 2.o
+assembler/obj/lex.yy 2.o
+mace/obj/main 2.o
+acse/obj/Acse.tab.c
+acse/obj/Acse.tab.h
+acse/obj/lex.yy.c
+acse/obj/Acse.tab.c
+acse/obj/Acse.tab.h
+acse/obj/lex.yy.c
+acse/obj/Acse.tab 2.c
+acse/obj/Acse.tab 2.h
+acse/obj/Acse.tab 2.o
+acse/obj/axe_gencode 2.d
+acse/obj/axe_gencode 2.o
+acse/obj/axe_io_manager 2.d
+acse/obj/axe_io_manager 2.o
+acse/obj/axe_labels 2.d
+acse/obj/axe_labels 2.o
+acse/obj/axe_reg_alloc 2.d
+acse/obj/axe_reg_alloc 2.o
+acse/obj/axe_struct 2.d
+acse/obj/axe_struct 2.o
+acse/obj/axe_target_asm_print 2.d
+acse/obj/axe_target_asm_print 2.o
+acse/obj/axe_target_transform 2.d
+acse/obj/axe_target_transform 2.o
+acse/obj/axe_transform 2.d
+acse/obj/axe_transform 2.o
+acse/obj/axe_utils 2.d
+acse/obj/axe_utils 2.o
+acse/obj/axe_version 2.c
+acse/obj/axe_version 2.o
+acse/obj/collections 2.d
+acse/obj/collections 2.o
+acse/obj/lex.yy 2.c
+acse/obj/lex.yy 2.o
+acse/obj/symbol_table 2.d
+acse/obj/symbol_table 2.o
+assembler/obj/assembler.tab 2.o
+assembler/obj/lex.yy 2.o
+bin/acse 2
+bin/asm 2
+bin/mace 2
+mace/obj/main 2.d
+mace/obj/main 2.o

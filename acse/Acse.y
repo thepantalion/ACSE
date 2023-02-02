@@ -126,6 +126,8 @@ extern void yyerror(const char*);
 %token READ
 %token WRITE
 
+%token INBOUNDS
+
 %token <label> DO
 %token <while_stmt> WHILE
 %token <label> IF
@@ -544,6 +546,70 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                            (program, exp_r0, $2, SUB);
                   }
                }
+   | INBOUNDS LPAR IDENTIFIER ASSIGN IDENTIFIER LSQUARE exp RSQUARE RPAR {
+      // (1)
+      t_axe_variable* destination = getVariable(program, $3); //$3 refers to the first IDENTIFIER
+      t_axe_variable* source = getVariable(program, $5);
+
+      if(destination->isArray) {
+         yyerror("the destination is an array, change it to a scalar value");
+         YYERROR;
+      }
+      if(!source->isArray) {
+         yyerror("the source is an scalar, change it to an array pointer");
+         YYERROR;
+      }
+
+      // (2) 
+      // $7 is a t_axe_expression type, it can be passed as is
+      // create_expression can create an IMMEDIATE or REGISTER expression : the latter uses a register and returns the identifier of the used register, while IMMEDIATE stores a simple number(?)
+      // handle_bin_numeric_op() contains the ANDB needed to perform the check
+      t_axe_expression greaterEqual = handle_binary_comparison(program, $7, create_expression(0, IMMEDIATE), _GTEQ_);
+      t_axe_expression lessThan = handle_binary_comparison(program, $7, create_expression(source -> arraySize, IMMEDIATE), _LT_);
+      t_axe_expression condition = handle_bin_numeric_op(program, greaterEqual, lessThan, ANDL);
+
+      // (3)
+      int r_destination = get_symbol_location(program, $3, 0);
+
+      // (4)
+      if(condition.expression_type == IMMEDIATE) {
+         if (condition.value == 1) {
+            int r_element = loadArrayElement(program, $5, $7);
+            gen_addi_instruction(program, r_destination, r_element, 0);
+         }
+      } else {
+         // (5) it is not certain that the handle_bin_numeric_op() set the Z flag on the CPU correctly in the case of run-time handled expressions. This ANDB does it to jump for sure.
+         gen_andb_instruction(program, REG_0, condition.value, condition.value);
+         t_axe_label* l_skip = newLabel(program);
+         gen_beq_instruction(program, l_skip, 0);
+
+         int r_element = loadArrayElement(program, $5, $7);
+         gen_addi_instruction(program, r_destination, r_element, 0);
+         assignLabel(l_skip);
+      }
+
+      // (bonus)
+      free($3);
+      free($5);
+
+      $$ = condition;
+   }
+   
+   /* (1) need to check that the first identifier is a scalar and the second is an array
+    *     can use getVariable to obtain data about the identifier and check isArray 
+    *
+    * (2) index is valid if it is greater than 0 and strict-less than the array size -> condition is index ≥ 0 && index < arraySize
+    *     condition should be computed both at compile-time and run-time since it is an expression
+    *     handle_binary_comparison() handles constant folding for us while comparing the result
+    * 
+    * (3) the register of the destination shall be obtained to store the value contained in the array at position indicated by the expression
+    *
+    * (4) evaluate if the resulting condition is a immediate (means that it was evaluated at compile-time) or register
+    *     -> (5) in case of a register, it is needed to make sure that the proper flags for the jump are set
+    *            generate the code to assign the element of the array (source) to the variable (destination)
+    *
+    * (bonus) REMEMBER TO DEALLOCATE THE STRINGS OF EACH IDENTIFIER
+    */
 ;
 
 %%
