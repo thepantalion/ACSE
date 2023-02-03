@@ -547,6 +547,7 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                   }
                }
    | COUNT_ONES LPAR exp RPAR { /* idea is to shift the array one bit at the time, and use an AND operation with a mask where the last bit is 1 */
+                  // this is the code that lets the compiler calculate COUNT_ONES for us without creating any new instruction in the output MACE program
                   if($3.expression_type == IMMEDIATE) { 
                      // whenever possible, costant folding should be executed (means to check if it is IMMEDIATE or REGISTER)
                      // exp is known at compile-time
@@ -560,6 +561,7 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                      }
 
                      $$ = create_expression(result, IMMEDIATE); // $$ is the result of the expression
+                  // this is the code to add instruction to the output MACE program if exp is really an expression that need to be first solved
                   } else {
                      // exp is knwon at run-time
                      //
