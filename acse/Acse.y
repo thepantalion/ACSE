@@ -272,32 +272,29 @@ permutate_statement : PERMUTATE LPAR IDENTIFIER COMMA LPERM perm_list RPERM RPAR
                         int r_first_value = loadArrayElement(program, $3, create_expression(first_index, IMMEDIATE));
                         gen_addi_instruction(program, r_value_to_write, r_first_value, 0);
 
-                        perm = LNEXT(perm);
+                        perm = LNEXT(perm); // accesses the next item in the list
 
-                        if(true) { // differentiate between the easiest solution
-                           while(perm != NULL) {
-                              //perm[i]
-                              int index = LINTDATA(perm); //index is known at compile-time
+                        
+                        while(perm != NULL) {
+                           //perm[i]
+                           int index = LINTDATA(perm); //index is known at compile-time
 
-                              if(index < 0 || index >= array -> arraySize) {
-                                 yyerror("invalid access in permutate statement");
-                                 YYERROR;
-                              }
-
-                              //tmp = a[perm[i]]
-                              int r_element = loadArrayElement(program, $3, create_expression(index, IMMEDIATE));
-                              gen_addi_instruction(program, r_temp, r_element, 0);
-
-                              //a[perm[i]] = value_to_write
-                              storeArrayElement(program, $3, create_expression(index, IMMEDIATE), create_expression(r_value_to_write, IMMEDIATE));
-
-                              // value_to_write = temp
-                              gen_addi_instruction(program, r_value_to_write, r_temp, 0);
-
-                              perm = LNEXT(perm) //takes the next position wrt to the current one
+                           if(index < 0 || index >= array -> arraySize) {
+                              yyerror("invalid access in permutate statement");
+                              YYERROR;
                            }
-                        } else {
 
+                           //tmp = a[perm[i]]
+                           int r_element = loadArrayElement(program, $3, create_expression(index, IMMEDIATE));
+                           gen_addi_instruction(program, r_temp, r_element, 0);
+
+                           //a[perm[i]] = value_to_write
+                           storeArrayElement(program, $3, create_expression(index, IMMEDIATE), create_expression(r_value_to_write, IMMEDIATE));
+
+                           // value_to_write = temp
+                           gen_addi_instruction(program, r_value_to_write, r_temp, 0);
+
+                           perm = LNEXT(perm) //takes the next position wrt to the current one
                         }
 
                         //a[perm[0]] = value_to_write
