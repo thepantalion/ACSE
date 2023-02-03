@@ -126,6 +126,8 @@ extern void yyerror(const char*);
 %token READ
 %token WRITE
 
+%token PERMUTATE LPERM RPERM
+
 %token <label> DO
 %token <while_stmt> WHILE
 %token <label> IF
@@ -138,6 +140,7 @@ extern void yyerror(const char*);
 %type <decl> declaration
 %type <list> declaration_list
 %type <label> if_stmt
+%type <list> perm_list
 
 /*=========================================================================
                           OPERATOR PRECEDENCES
@@ -247,8 +250,76 @@ statements  : statements statement       { /* does nothing */ }
 statement   : assign_statement SEMI      { /* does nothing */ }
             | control_statement          { /* does nothing */ }
             | read_write_statement SEMI  { /* does nothing */ }
+            | permutate_statement SEMI   { /* does nothing */ }
             | SEMI            { gen_nop_instruction(program); }
 ;
+
+permutate_statement : PERMUTATE LPAR IDENTIFIER COMMA LPERM perm_list RPERM RPAR {
+                        t_axe_variable* array = getVariable(program, $3);
+                        
+                        if(!array || !array->isArray) {
+                           yyerror("The one provided is not an array");
+                           YYERROR;
+                        }
+
+                        int r_value_to_write = createVariable(program); //represent the register containing the value to write, not the value itself
+                        int r_temp = createVariable(program);
+
+                        t_list* perm = $6;
+
+                        // (run-time) value_to_write = a[perm[0]];
+                        int first_index = LINTDATA(perm); //macro to dereference the current int value of the list
+                        int r_first_value = loadArrayElement(program, $3, create_expression(first_index, IMMEDIATE));
+                        gen_addi_instruction(program, r_value_to_write, r_first_value, 0);
+
+                        perm = LNEXT(perm);
+
+                        if(true) { // differentiate between the easiest solution
+                           while(perm != NULL) {
+                              //perm[i]
+                              int index = LINTDATA(perm); //index is known at compile-time
+
+                              if(index < 0 || index >= array -> arraySize) {
+                                 yyerror("invalid access in permutate statement");
+                                 YYERROR;
+                              }
+
+                              //tmp = a[perm[i]]
+                              int r_element = loadArrayElement(program, $3, create_expression(index, IMMEDIATE));
+                              gen_addi_instruction(program, r_temp, r_element, 0);
+
+                              //a[perm[i]] = value_to_write
+                              storeArrayElement(program, $3, create_expression(index, IMMEDIATE), create_expression(r_value_to_write, IMMEDIATE));
+
+                              // value_to_write = temp
+                              gen_addi_instruction(program, r_value_to_write, r_temp, 0);
+
+                              perm = LNEXT(perm) //takes the next position wrt to the current one
+                           }
+                        } else {
+
+                        }
+
+                        //a[perm[0]] = value_to_write
+                        storeArrayElement(program. $3, create_expression(first_index, IMMEDIATE), create_expression(r_value_to_write, IMMEDIATE));
+
+                        free($3);
+                        freeList($6); //the beginning of the list, which is $6, not perm, which is the pointer to the current element of the list
+                     }
+;
+
+// can associate a list that contains the value that get parsed
+perm_list : NUMBER COMMA perm_list {
+            $$ = addFirst($3, INTDATA($1));
+          }
+          | NUMBER {
+            $$ = addFirst(NULL, INTDATA($1));
+          }
+;
+
+/*  (1) 
+ *
+ */
 
 control_statement : if_statement         { /* does nothing */ }
             | while_statement            { /* does nothing */ }

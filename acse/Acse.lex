@@ -94,6 +94,10 @@ ID       [a-zA-Z_][a-zA-Z0-9_]*
 "read"            { return READ; }
 "write"           { return WRITE; }
 
+"permutate"       { return PERMUTATE; }
+"p["              { return LPERM; }
+"]q"              { return RPERM: }
+
 {ID}              { yylval.svalue=strdup(yytext); return IDENTIFIER; }
 {DIGIT}+          { yylval.intval = atoi( yytext );
                     return(NUMBER); }
