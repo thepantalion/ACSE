@@ -126,6 +126,8 @@ extern void yyerror(const char*);
 %token READ
 %token WRITE
 
+%token CONCATENATE
+
 %token <label> DO
 %token <while_stmt> WHILE
 %token <label> IF
@@ -308,6 +310,20 @@ assign_statement : IDENTIFIER LSQUARE exp RSQUARE ASSIGN exp
                /* free the memory associated with the IDENTIFIER */
                free($1);
             }
+         | IDENTIFIER ASSIGN IDENTIFIER CONCATENATE IDENTIFIER {
+            //check if $1, $3 and $5 are arrays;
+            
+
+            //retrieve the variables to check that the identifiers are arrays
+            t_axe_label l_skip = newLabel(program);
+
+            //define the temporary variables: int counter = 0, countSource = 0, which = 0;
+            int r_counter = gen_load_immediate(program, 0);
+            int r_count_source = gen_load_immediate(program, 0);
+            int r_which = gen_load_immediate(program, 0);
+
+            
+         }
 ;
             
 if_statement   : if_stmt
