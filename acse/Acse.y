@@ -310,7 +310,7 @@ assign_statement : IDENTIFIER LSQUARE exp RSQUARE ASSIGN exp
                /* free the memory associated with the IDENTIFIER */
                free($1);
             }
-         | IDENTIFIER ASSIGN IDENTIFIER CONCATENATE IDENTIFIER {
+         | IDENTIFIER ASSIGN IDENTIFIER CONCATENATE IDENTIFIER SEMI {
             //check if $1, $3 and $5 are arrays;
             t_axe_variable* destination = getVariable(program, $1);
             t_axe_variable* firstSource = getVariable(program, $3);
@@ -344,7 +344,7 @@ assign_statement : IDENTIFIER LSQUARE exp RSQUARE ASSIGN exp
             //define the while condition check: while(counter < res.size)
             assignLabel(program, l_check);
             gen_sub_instruction(program, REG_0, r_counter, r_destSize, 0);
-            gen_bmi_instruction(program, l_skip, 0);
+            gen_beq_instruction(program, l_skip, 0);
 
             //if(countSource == a.size)
             gen_sub_instruction(program, REG_0, r_count_source, r_firstSourceSize, 0);
