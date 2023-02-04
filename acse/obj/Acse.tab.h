@@ -69,13 +69,14 @@
      RETURN = 285,
      READ = 286,
      WRITE = 287,
-     DO = 288,
-     WHILE = 289,
-     IF = 290,
-     ELSE = 291,
-     TYPE = 292,
-     IDENTIFIER = 293,
-     NUMBER = 294
+     CONCATENATE = 288,
+     DO = 289,
+     WHILE = 290,
+     IF = 291,
+     ELSE = 292,
+     TYPE = 293,
+     IDENTIFIER = 294,
+     NUMBER = 295
    };
 #endif
 /* Tokens.  */
@@ -109,13 +110,14 @@
 #define RETURN 285
 #define READ 286
 #define WRITE 287
-#define DO 288
-#define WHILE 289
-#define IF 290
-#define ELSE 291
-#define TYPE 292
-#define IDENTIFIER 293
-#define NUMBER 294
+#define CONCATENATE 288
+#define DO 289
+#define WHILE 290
+#define IF 291
+#define ELSE 292
+#define TYPE 293
+#define IDENTIFIER 294
+#define NUMBER 295
 
 
 
@@ -133,7 +135,7 @@ typedef union YYSTYPE
    t_while_statement while_stmt;
 }
 /* Line 1529 of yacc.c.  */
-#line 137 "obj/Acse.tab.h"
+#line 139 "obj/Acse.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

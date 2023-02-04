@@ -312,17 +312,65 @@ assign_statement : IDENTIFIER LSQUARE exp RSQUARE ASSIGN exp
             }
          | IDENTIFIER ASSIGN IDENTIFIER CONCATENATE IDENTIFIER {
             //check if $1, $3 and $5 are arrays;
-            
+            t_axe_variable* destination = getVariable(program, $1);
+            t_axe_variable* firstSource = getVariable(program, $3);
+            t_axe_variable* secondSource = getVariable(program, $5);
+
+            if(!destination->isArray || !firstSource->isArray || !secondSource->isArray) {
+               yyerror("One or more provided variables do not refer to an array.");
+               YYERROR;
+            }
 
             //retrieve the variables to check that the identifiers are arrays
-            t_axe_label l_skip = newLabel(program);
+            t_axe_label* l_check = newLabel(program);
+            t_axe_label* l_skip = newLabel(program);
+
+            t_axe_label* l_skipChange = newLabel(program);
+            t_axe_label* l_skipFirst = newLabel(program);
+            t_axe_label* l_skipSecond = newLabel(program);
 
             //define the temporary variables: int counter = 0, countSource = 0, which = 0;
             int r_counter = gen_load_immediate(program, 0);
             int r_count_source = gen_load_immediate(program, 0);
             int r_which = gen_load_immediate(program, 0);
 
+            //define the size of the array
+            int r_destSize = gen_load_immediate(program, destination->arraySize);
+            int r_firstSourceSize = gen_load_immediate(program, firstSource->arraySize);
+            int r_secondSourceSize = gen_load_immediate(program, secondSource->arraySize);
+
+            int r_firstElement;
+
+            //define the while condition check: while(counter < res.size)
+            assignLabel(program, l_check);
+            gen_sub_instruction(program, REG_0, r_counter, r_destSize, 0);
+            gen_bmi_instruction(program, l_skip, 0);
+
+            //if(countSource == a.size)
+            gen_sub_instruction(program, REG_0, r_count_source, r_firstSourceSize, 0);
+            gen_bne_instruction(program, l_skipChange, 0);
+
+            gen_move_immediate(program, r_count_source, 0); //countSource = 0;
+            gen_move_immediate(program, r_which, 1); //which = 1;
+
+            //if(which) then
+            assignLabel(program, l_skipChange);
+            gen_addi_instruction(program, r_which, r_which, 0);
+            gen_bne_instruction(program, l_skipFirst, 0);
+
+            r_firstElement = loadArrayElement(program, firstSource->ID, create_expression(r_count_source, IMMEDIATE));
+            storeArrayElement(program, destination->ID, create_expression(r_counter, IMMEDIATE), create_expression(r_firstElement, IMMEDIATE));
+            gen_bt_instruction(program, l_skipSecond, 0);
+
+            assignLabel(program, l_skipFirst);
+            r_firstElement = loadArrayElement(program, secondSource->ID, create_expression(r_count_source, IMMEDIATE));
+            storeArrayElement(program, destination->ID, create_expression(r_counter, IMMEDIATE), create_expression(r_firstElement, IMMEDIATE));
             
+            //increment counters and jump back to check
+            assignLabel(program, l_skipSecond);
+            gen_addi_instruction(program, r_counter, r_counter, 1);
+            gen_addi_instruction(program, r_count_source, r_count_source, 1);
+            gen_bt_instruction(program, l_check, 0);
          }
 ;
             

@@ -179,3 +179,15 @@ bin/asm 2
 bin/mace 2
 mace/obj/main 2.d
 mace/obj/main 2.o
+acse/obj/Acse.tab.c
+acse/obj/Acse.tab.h
+acse/obj/lex.yy.c
+tests/.DS_Store
+tests/concat/concatenate.src
+tests/concat/output_control_flow.log
+tests/concat/output_data_flow.log
+tests/concat/output_frontend.log
+tests/concat/output_reg_alloc.log
+tests/concat/output_symbol_table.log
+tests/concat/output.asm
+tests/concat/output.o
