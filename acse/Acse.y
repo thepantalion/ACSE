@@ -275,7 +275,8 @@ permutate_statement : PERMUTATE LPAR IDENTIFIER COMMA LPERM perm_list RPERM RPAR
                         perm = LNEXT(perm); // accesses the next item in the list
 
                         
-                        while(perm != NULL) {
+                        while(perm != NULL) { // loop unroll -> instead of adding branch instructions to do loops , a finite number (known at compile-time)
+                                              //                of ADDI instructions is used to move values inside the array  
                            //perm[i]
                            int index = LINTDATA(perm); //index is known at compile-time
 
