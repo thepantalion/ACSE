@@ -324,6 +324,7 @@ assign_statement : IDENTIFIER LSQUARE exp RSQUARE ASSIGN exp
             //retrieve the variables to check that the identifiers are arrays
             t_axe_label* l_check = newLabel(program);
             t_axe_label* l_skip = newLabel(program);
+            t_axe_label* l_exit = newLabel(program);
 
             t_axe_label* l_skipChange = newLabel(program);
             t_axe_label* l_skipFirst = newLabel(program);
@@ -339,12 +340,17 @@ assign_statement : IDENTIFIER LSQUARE exp RSQUARE ASSIGN exp
             int r_firstSourceSize = gen_load_immediate(program, firstSource->arraySize);
             int r_secondSourceSize = gen_load_immediate(program, secondSource->arraySize);
 
-            int r_firstElement;
+            int r_toLoad;
 
             //define the while condition check: while(counter < res.size)
-            assignLabel(program, l_check);
+            assignLabel(program, l_check);  //could have used: t_axe_label* l_next1 assignNewLabel(program)
             gen_sub_instruction(program, REG_0, r_counter, r_destSize, 0);
-            gen_beq_instruction(program, l_skip, 0);
+            gen_bge_instruction(program, l_skip, 0);
+
+            /* could have used:
+               -> handle_binary_comparison(program, create_expression(r_j, REGISTER), create_expression(firstSource->arraySize, IMMEDIATE), _LT_);
+               -> gen_beq_instruction(program, l_skip);
+            */
 
             //if(countSource == a.size)
             gen_sub_instruction(program, REG_0, r_count_source, r_firstSourceSize, 0);
@@ -358,19 +364,25 @@ assign_statement : IDENTIFIER LSQUARE exp RSQUARE ASSIGN exp
             gen_addi_instruction(program, r_which, r_which, 0);
             gen_bne_instruction(program, l_skipFirst, 0);
 
-            r_firstElement = loadArrayElement(program, firstSource->ID, create_expression(r_count_source, IMMEDIATE));
-            storeArrayElement(program, destination->ID, create_expression(r_counter, IMMEDIATE), create_expression(r_firstElement, IMMEDIATE));
+            r_toLoad = loadArrayElement(program, firstSource->ID, create_expression(r_count_source, REGISTER));
+            storeArrayElement(program, destination->ID, create_expression(r_counter, REGISTER), create_expression(r_toLoad, REGISTER));
             gen_bt_instruction(program, l_skipSecond, 0);
 
             assignLabel(program, l_skipFirst);
-            r_firstElement = loadArrayElement(program, secondSource->ID, create_expression(r_count_source, IMMEDIATE));
-            storeArrayElement(program, destination->ID, create_expression(r_counter, IMMEDIATE), create_expression(r_firstElement, IMMEDIATE));
+            r_toLoad = loadArrayElement(program, secondSource->ID, create_expression(r_count_source, REGISTER));
+            storeArrayElement(program, destination->ID, create_expression(r_counter, REGISTER), create_expression(r_toLoad, REGISTER));
             
             //increment counters and jump back to check
             assignLabel(program, l_skipSecond);
             gen_addi_instruction(program, r_counter, r_counter, 1);
             gen_addi_instruction(program, r_count_source, r_count_source, 1);
             gen_bt_instruction(program, l_check, 0);
+            
+            t_axe_label* l_exit = assignNewLabel(program);
+
+            free($1);
+            free($3);
+            free($5);
          }
 ;
             
@@ -438,7 +450,7 @@ while_statement  : WHILE
                      /* reserve a new label. This new label will point
                       * to the first instruction after the while code
                       * block */
-                     $1.label_end = newLabel(program);
+                     $1.label_end = newLabel(program);7
 
                      /* if `exp' returns FALSE, jump to the label 
                       * $1.label_end */
