@@ -90,6 +90,13 @@ t_reg_allocator *RA;       /* Register allocator. It implements the "Linear
 
 t_io_infos *file_infos;    /* input and output files used by the compiler */
 
+typedef struct {
+   t_axe_label* l_skip;
+   t_axe_expression* toReturn;
+   int r_result;
+} t_exec_statement;
+
+t_list* execStack = NULL;
 
 extern int yylex(void);
 extern void yyerror(const char*);
@@ -109,6 +116,7 @@ extern void yyerror(const char*);
    t_list *list;
    t_axe_label *label;
    t_while_statement while_stmt;
+   t_exec_statement exec;
 } 
 /*=========================================================================
                                TOKENS 
@@ -125,6 +133,8 @@ extern void yyerror(const char*);
 %token RETURN
 %token READ
 %token WRITE
+
+%token <exec> EXEC
 
 %token <label> DO
 %token <while_stmt> WHILE
@@ -418,6 +428,19 @@ return_statement : RETURN
                /* insert an HALT instruction */
                gen_halt_instruction(program);
             }
+                 | RETURN exp {
+                     if(execStack == NULL) {
+                        yyerror("An 'exec' statement is required to use this kind of return");
+                        YYERROR;
+                     }
+
+                     t_exec_statement* execStatement = LDATA(execStack);
+
+                     if($2.expression_type == IMMEDIATE) gen_addi_instruction(program, execStatement->r_result, REG_0, $2->value);
+                     else gen_add_instruction(program, execStatement->r_result, REG_0, $2->value, CG_DIRECT_ALL);
+
+                     gen_bt_instruction(program, execStatement->l_skip);
+                 }
 ;
 
 read_statement : READ LPAR IDENTIFIER RPAR 
@@ -544,6 +567,21 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                            (program, exp_r0, $2, SUB);
                   }
                }
+   | EXEC {
+      t_exec_statement* execStatement = malloc(sizeof(t_exec_statement));
+      addFirst(execStack, (void *) execStatement);
+
+      execStatement->r_result = gen_load_immediate(program, 0);
+      execStatement->l_skip = newLabel(program);
+   } LPAR code_block RPAR {
+      t_exec_statement* execStatement = LDATA(execStack);
+      execStack = removeFirst(execStack);
+
+      assignLabel(program, execStatement->l_skip);
+      $$ = create_expression(execStatement->r_result, REGISTER);
+
+      free(execStatement);
+   }
 ;
 
 %%
