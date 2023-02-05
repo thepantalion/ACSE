@@ -126,6 +126,8 @@ extern void yyerror(const char*);
 %token READ
 %token WRITE
 
+%token SUMWEIGHTBY
+
 %token <label> DO
 %token <while_stmt> WHILE
 %token <label> IF
@@ -138,6 +140,7 @@ extern void yyerror(const char*);
 %type <decl> declaration
 %type <list> declaration_list
 %type <label> if_stmt
+%type <list> weight_list
 
 /*=========================================================================
                           OPERATOR PRECEDENCES
@@ -544,7 +547,101 @@ exp: NUMBER      { $$ = create_expression ($1, IMMEDIATE); }
                            (program, exp_r0, $2, SUB);
                   }
                }
+   | SUMWEIGHTBY IDENTIFIER LSQUARE weight_list RSQUARE SEMI {
+      /*
+      //int result, counter = 0;
+      int r_result = gen_load_immediate(program, 0);
+      int r_counter = gen_load_immediate(program, 0);
+      int r_element;
+      
+      t_axe_variable* var_x = getVariable(program, $2);
+      if(!var_x->isArray) {
+         yyerror("Sum weight by needs an array to operate.");
+         YYERROR;
+      }
+      t_axe_label l_exit = newLabel(program);
+
+      //while(counter < x.arraySize)
+      t_axe_label* l_check = assignNewLabel(program);
+      handle_binary_comparison(program, r_counter, create_expression(var_x->arraySize, IMMEDIATE), _LT_);
+      gen_beq_instruction(program, l_exit);
+
+      //result += weight_list[counter] * x[counter]
+      r_element = loadArrayElement(program, $2, create_expression(r_counter, REGISTER));
+      gen_mul_instruction(program, r_element, r_element, LINTDATA($4), CG_DIRECT_ALL);
+      gen_add_instruction(program, r_result, r_result, r_element, CG_DIRECT_ALL);
+
+      //counter++
+      gen_addi_instruction(program, r_counter, r_counter, 1);
+      LNEXT($4);
+      gen_bt_instruction(program, l_check);
+
+      //return result
+      assignLabel(program, l_exit);
+      $$ = create_expression(r_result, IMMEDIATE);
+      */ // -> wrong: when a t_list is used, then it must be used at compile-time, the code above was intended for run-time where t_list cannot exist
+
+      t_axe_expression exp_result = create_expression(0, IMMEDIATE);
+      t_list* curr = $4;
+
+      int r_currentElement;
+
+      t_axe_variable* var_x = getVariable(program, $2);
+      if(!var_x->isArray) {
+         yyerror("Sum weight by needs an array to operate.");
+         YYERROR;
+      }
+
+      for(int i = 0; i < var_x->arraySize; i++) {
+         if(curr == NULL) {
+            yyerror("The size of the list of expressions is not the same of the input array");
+            YYERROR;
+         }
+
+         r_currentElement = loadArrayElement(program, $2, create_expression(i, IMMEDIATE));
+         exp_result = handle_bin_numeric_op(program, exp_result, handle_bin_numeric_op(program, create_expression(r_currentElement, REGISTER), (t_axe_expression*) LDATA(curr), MUL), ADD);
+
+         curr = LNEXT(curr);
+      }
+
+      if(curr != NULL) yyerror("exp list is too long");
+
+      $$ = exp_result;
+      freeList($6);
+   }
 ;
+ 
+weight_list : weight_list COMMA exp { //recursive case 
+               /*
+               if($1.expression_type == IMMEDIATE) {
+                  $$ = addLast($3, INTDATA($1));
+               } else {
+                  t_axe_expression exp_temp = handle_bin_numeric_op(program, $1, create_expression(0, IMMEDIATE), ADD);
+                  $$ = addLast($3, INTDATA(exp_temp->value));
+               }
+               */
+
+               t_axe_expression* our_exp = malloc(sizeof(t_axe_expression));
+               our_exp = $1;
+               $$ = addElement($1, (void *) our_exp, -1);
+            }
+            | exp { //base case
+               /*
+               if($1.expression_type == IMMEDIATE) {
+                  $$ = addLast(NULL, INTDATA($1));
+               } else {
+                  //t_axe_expression* our_exp = malloc(sizeof(t_axe_expression));
+                  //our_exp = $1;
+                  //$$ = addElement(NULL, (void *) our_exp, -1);
+                  t_axe_expression exp_temp = handle_bin_numeric_op(program, $1, create_expression(0, IMMEDIATE), ADD);
+                  $$ = addLast(NULL, INTDATA(exp_temp->value));
+               }
+               */
+
+               t_axe_expression* our_exp = malloc(sizeof(t_axe_expression));
+               our_exp = $1;
+               $$ = addElement(NULL, (void *) our_exp, -1);
+            }
 
 %%
 /*=========================================================================
